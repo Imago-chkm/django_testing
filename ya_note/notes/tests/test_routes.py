@@ -13,14 +13,14 @@ class TestRouters(TestCase):
 
     @classmethod
     def setUpTestData(cls):
+        cls.author = User.objects.create(username='Лев Толстой')
+        cls.reader = User.objects.create(username='Читатель простой')
         cls.note = Note.objects.create(
             title='Заголовок',
             text='Текст',
             slug='slug',
             author=cls.author
         )
-        cls.author = User.objects.create(username='Лев Толстой')
-        cls.reader = User.objects.create(username='Читатель простой')
 
     def test_availability_pages(self):
         """Страницы доступные анонимному пользователю."""
@@ -38,4 +38,11 @@ class TestRouters(TestCase):
 
     def test_notes_create_availability(self):
         """Аутентифицированному пользователю доступны notes/, done/ и add/."""
-        
+        user = self.author
+        status = HTTPStatus.OK
+        self.client.force_login(user)
+        for name in ('notes:list', 'notes:add', 'notes:success'):
+            with self.subTest(user=user, name=name):
+                url = reverse(name)
+                response = self.client.get(url)
+                self.assertEqual(response.status_code, status)

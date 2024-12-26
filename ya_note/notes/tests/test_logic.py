@@ -5,7 +5,7 @@ from django.test import Client, TestCase
 from django.urls import reverse
 from pytils.translit import slugify
 
-from notes.forms import NoteForm ,WARNING
+from notes.forms import NoteForm, WARNING
 from notes.models import Note
 
 User = get_user_model()
@@ -15,24 +15,29 @@ class TestLogic(TestCase):
 
     SLUG_TITLE = 'title'
     SLUG_CHECK = 'slug check'
+    FORM_TEXT = 'form text'
 
     @classmethod
     def setUpTestData(cls):
+
         cls.author = User.objects.create(username='Лев Толстой')
         cls.reader = User.objects.create(username='Читатель простой')
         cls.author_client = Client()
         cls.author_client.force_login(cls.author)
-        cls.url_add = reverse('notes:add')
-        cls.form_data = {
-            'title': cls.SLUG_CHECK,
-            'text': 'Текст',
-        }
         cls.note = Note.objects.create(
             title='Заголовок',
             text='Текст',
             slug=cls.SLUG_TITLE,
             author=cls.author
         )
+        cls.url_add = reverse('notes:add')
+        cls.url_edit = reverse('notes:edit', args=(cls.note.slug,))
+        cls.url_delete = reverse('notes:delete', args=(cls.note.slug,))
+        cls.url_success = reverse('notes:success')
+        cls.form_data = {
+            'title': cls.SLUG_CHECK,
+            'text': cls.FORM_TEXT,
+        }
 
     def test_anonim_cant_create_note(self):
         """Аноним не может создавать заметки."""
@@ -68,14 +73,25 @@ class TestLogic(TestCase):
             slugify(self.form_data[self.SLUG_TITLE])
         )
 
+    def test_author_can_edit_his_notes(self):
+        """Автор может редактировать свои заметки."""
+        response = self.author_client.post(
+            self.url_edit,
+            data=self.form_data
+        )
+        self.assertRedirects(response, self.url_success)
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.text, self.FORM_TEXT)
 
-    # def test_author_can_edit_his_notes(self):
-    #     """Автор может редактировать свои заметки."""
-    #     pass
-
-    # def test_author_can_delete_his_notes(self):
-    #     """Автор может удалять свои заметки."""
-    #     pass
+    def test_author_can_delete_his_notes(self):
+        """Автор может удалять свои заметки."""
+        response = self.author_client.post(
+            self.url_delete,
+            data=self.form_data
+        )
+        self.assertRedirects(response, self.url_success)
+        note_count = Note.objects.count()
+        self.assertEqual(note_count, 0)
 
     # def test_user_cant_edit_another_users_notes(self):
     #     """Пользователь не может редактировать чужие заметки."""

@@ -15,6 +15,8 @@ class TestLogic(TestCase):
     def setUpTestData(cls):
         cls.author = User.objects.create(username='Лев Толстой')
         cls.reader = User.objects.create(username='Читатель простой')
+        cls.author_client = Client()
+        cls.author_client.force_login(cls.author)
         cls.url_add = reverse('notes:add')
         cls.form_data = {
             'title': 'Заголовок',
@@ -33,9 +35,11 @@ class TestLogic(TestCase):
         note_count = Note.objects.count()
         self.assertEqual(note_count, 1)
 
-    # def test_logged_user_can_create_note(self):
-    #     """Залогиненый юзер может создавать заметки."""
-    #     pass
+    def test_logged_user_can_create_note(self):
+        """Залогиненый юзер может создавать заметки."""
+        self.author_client.post(self.url_add, data=self.form_data)
+        note_count = Note.objects.count()
+        self.assertEqual(note_count, 2)
 
     # def test_no_possible_two_same_slug(self):
     #     """Невозможно создать две заметки с одинаковым slug."""

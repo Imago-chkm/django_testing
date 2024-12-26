@@ -15,7 +15,8 @@ class TestLogic(TestCase):
 
     SLUG_TITLE = 'title'
     SLUG_CHECK = 'slug check'
-    FORM_TEXT = 'form text'
+    NOTE_TEXT = 'заметка'
+    NEW_NOTE_TEXT = 'обновленная заметка'
 
     @classmethod
     def setUpTestData(cls):
@@ -24,9 +25,11 @@ class TestLogic(TestCase):
         cls.reader = User.objects.create(username='Читатель простой')
         cls.author_client = Client()
         cls.author_client.force_login(cls.author)
+        cls.reader_client = Client()
+        cls.reader_client.force_login(cls.reader)
         cls.note = Note.objects.create(
             title='Заголовок',
-            text='Текст',
+            text=cls.NOTE_TEXT,
             slug=cls.SLUG_TITLE,
             author=cls.author
         )
@@ -36,7 +39,7 @@ class TestLogic(TestCase):
         cls.url_success = reverse('notes:success')
         cls.form_data = {
             'title': cls.SLUG_CHECK,
-            'text': cls.FORM_TEXT,
+            'text': cls.NEW_NOTE_TEXT,
         }
 
     def test_anonim_cant_create_note(self):
@@ -81,22 +84,28 @@ class TestLogic(TestCase):
         )
         self.assertRedirects(response, self.url_success)
         self.note.refresh_from_db()
-        self.assertEqual(self.note.text, self.FORM_TEXT)
+        self.assertEqual(self.note.text, self.NEW_NOTE_TEXT)
 
     def test_author_can_delete_his_notes(self):
         """Автор может удалять свои заметки."""
-        response = self.author_client.post(
-            self.url_delete,
-            data=self.form_data
-        )
+        response = self.author_client.post(self.url_delete)
         self.assertRedirects(response, self.url_success)
         note_count = Note.objects.count()
         self.assertEqual(note_count, 0)
 
-    # def test_user_cant_edit_another_users_notes(self):
-    #     """Пользователь не может редактировать чужие заметки."""
-    #     pass
+    def test_user_cant_edit_another_users_notes(self):
+        """Пользователь не может редактировать чужие заметки."""
+        response = self.reader_client.post(
+            self.url_edit,
+            data=self.form_data
+        )
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+        self.note.refresh_from_db()
+        self.assertEqual(self.note.text, self.NOTE_TEXT)
 
-    # def test_user_cant_delele_another_users_notes(self):
-    #     """Пользователь не может удалять чужие заметки."""
-    #     pass
+    def test_user_cant_delele_another_users_notes(self):
+        """Пользователь не может удалять чужие заметки."""
+        response = self.reader_client.post(self.url_delete)
+        self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
+        note_count = Note.objects.count()
+        self.assertEqual(note_count, 1)

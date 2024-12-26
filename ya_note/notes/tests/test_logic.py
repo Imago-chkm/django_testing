@@ -3,8 +3,9 @@ from http import HTTPStatus
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
+from pytils.translit import slugify
 
-from notes.forms import WARNING
+from notes.forms import NoteForm ,WARNING
 from notes.models import Note
 
 User = get_user_model()
@@ -13,6 +14,7 @@ User = get_user_model()
 class TestLogic(TestCase):
 
     SLUG_TITLE = 'title'
+    SLUG_CHECK = 'slug check'
 
     @classmethod
     def setUpTestData(cls):
@@ -22,7 +24,7 @@ class TestLogic(TestCase):
         cls.author_client.force_login(cls.author)
         cls.url_add = reverse('notes:add')
         cls.form_data = {
-            'title': 'Заголовок',
+            'title': cls.SLUG_CHECK,
             'text': 'Текст',
         }
         cls.note = Note.objects.create(
@@ -57,9 +59,15 @@ class TestLogic(TestCase):
         note_count = Note.objects.count()
         self.assertEqual(note_count, 1)
 
-    # def test_automatic_slug_generation(self):
-    #     """slug формируется автоматически, если не был заполнен."""
-    #     pass
+    def test_automatic_slug_generation(self):
+        """Slug формируется автоматически, если не был заполнен."""
+        form = NoteForm(data=self.form_data)
+        form.full_clean()
+        self.assertEqual(
+            form.cleaned_data['slug'],
+            slugify(self.form_data[self.SLUG_TITLE])
+        )
+
 
     # def test_author_can_edit_his_notes(self):
     #     """Автор может редактировать свои заметки."""

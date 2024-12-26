@@ -1,35 +1,9 @@
-from datetime import datetime, timedelta
-
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
 from django.urls import reverse
 
-from notes.forms import NoteForm
-from notes.models import Note
-
-User = get_user_model()
-
-NOTES_COUNT_ON_HOME_PAGE = 10
+from . import fixtures
 
 
-class TestContent(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.author = User.objects.create(username='Лев Толстой')
-        cls.reader = User.objects.create(username='Читатель простой')
-        cls.author_client = Client()
-        cls.author_client.force_login(cls.author)
-        cls.reader_client = Client()
-        cls.reader_client.force_login(cls.reader)
-        cls.url_list = reverse('notes:list')
-        cls.note = Note.objects.create(
-            title='Заголовок',
-            text='Текст',
-            slug='slug',
-            author=cls.author
-        )
+class TestContent(fixtures.Fixtures):
 
     def test_note_passed_with_list_notes(self):
         """Заметка передаётся на страницу со списком заметок."""

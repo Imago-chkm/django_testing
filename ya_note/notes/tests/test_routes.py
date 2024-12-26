@@ -1,26 +1,11 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
-from django.test import TestCase
 from django.urls import reverse
 
-from notes.models import Note
-
-User = get_user_model()
+from . import fixtures
 
 
-class TestRouters(TestCase):
-
-    @classmethod
-    def setUpTestData(cls):
-        cls.author = User.objects.create(username='Лев Толстой')
-        cls.reader = User.objects.create(username='Читатель простой')
-        cls.note = Note.objects.create(
-            title='Заголовок',
-            text='Текст',
-            slug='slug',
-            author=cls.author
-        )
+class TestRouters(fixtures.Fixtures):
 
     def test_availability_pages(self):
         """Страницы, доступные анонимному пользователю."""
@@ -41,7 +26,11 @@ class TestRouters(TestCase):
         user = self.author
         status = HTTPStatus.OK
         self.client.force_login(user)
-        for name in ('notes:list', 'notes:add', 'notes:success'):
+        for name in (
+            self.URL_NOTES_LIST,
+            self.URL_NOTES_ADD,
+            self.URL_NOTES_SUCCESS
+        ):
             with self.subTest(user=user, name=name):
                 url = reverse(name)
                 response = self.client.get(url)
@@ -55,7 +44,11 @@ class TestRouters(TestCase):
         )
         for user, status in users_statuses:
             self.client.force_login(user)
-            for name in ('notes:edit', 'notes:delete', 'notes:detail'):
+            for name in (
+                self.URL_NOTES_EDIT,
+                self.URL_NOTES_DELETE,
+                self.URL_NOTES_DETAIL
+            ):
                 with self.subTest(user=user, name=name):
                     url = reverse(name, args=(self.note.slug,))
                     response = self.client.get(url)
@@ -65,12 +58,12 @@ class TestRouters(TestCase):
         """Редирект касаемый заметок, для анонимного пользователя."""
         login_url = reverse('users:login')
         urls = (
-            ('notes:list', None),
-            ('notes:success', None),
-            ('notes:add', None),
-            ('notes:edit', (self.note.slug,)),
-            ('notes:detail', (self.note.slug,)),
-            ('notes:delete', (self.note.slug,)),
+            (self.URL_NOTES_LIST, None),
+            (self.URL_NOTES_SUCCESS, None),
+            (self.URL_NOTES_ADD, None),
+            (self.URL_NOTES_EDIT, (self.note.slug,)),
+            (self.URL_NOTES_DELETE, (self.note.slug,)),
+            (self.URL_NOTES_DETAIL, (self.note.slug,)),
         )
         for name, args in urls:
             with self.subTest(name=name):

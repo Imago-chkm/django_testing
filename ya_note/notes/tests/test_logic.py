@@ -1,46 +1,13 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
-from django.test import Client, TestCase
-from django.urls import reverse
 from pytils.translit import slugify
 
 from notes.forms import NoteForm, WARNING
 from notes.models import Note
+from . import fixtures
 
-User = get_user_model()
 
-
-class TestLogic(TestCase):
-
-    SLUG_TITLE = 'title'
-    SLUG_CHECK = 'slug check'
-    NOTE_TEXT = 'заметка'
-    NEW_NOTE_TEXT = 'обновленная заметка'
-
-    @classmethod
-    def setUpTestData(cls):
-
-        cls.author = User.objects.create(username='Лев Толстой')
-        cls.reader = User.objects.create(username='Читатель простой')
-        cls.author_client = Client()
-        cls.author_client.force_login(cls.author)
-        cls.reader_client = Client()
-        cls.reader_client.force_login(cls.reader)
-        cls.note = Note.objects.create(
-            title='Заголовок',
-            text=cls.NOTE_TEXT,
-            slug=cls.SLUG_TITLE,
-            author=cls.author
-        )
-        cls.url_add = reverse('notes:add')
-        cls.url_edit = reverse('notes:edit', args=(cls.note.slug,))
-        cls.url_delete = reverse('notes:delete', args=(cls.note.slug,))
-        cls.url_success = reverse('notes:success')
-        cls.form_data = {
-            'title': cls.SLUG_CHECK,
-            'text': cls.NEW_NOTE_TEXT,
-        }
+class TestLogic(fixtures.Fixtures):
 
     def test_anonim_cant_create_note(self):
         """Аноним не может создавать заметки."""

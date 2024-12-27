@@ -1,9 +1,9 @@
 from http import HTTPStatus
-import pytest
 
-from pytest_lazyfixture import lazy_fixture
-from pytest_django.asserts import assertRedirects
+import pytest
 from django.urls import reverse
+from pytest_django.asserts import assertRedirects
+from pytest_lazyfixture import lazy_fixture
 
 
 @pytest.mark.django_db

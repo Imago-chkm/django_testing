@@ -1,9 +1,9 @@
 from http import HTTPStatus
 
+from notes.forms import WARNING, NoteForm
+from notes.models import Note
 from pytils.translit import slugify
 
-from notes.forms import NoteForm, WARNING
-from notes.models import Note
 from . import fixtures
 
 

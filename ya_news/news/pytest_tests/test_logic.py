@@ -1,11 +1,10 @@
-import pytest
 from http import HTTPStatus
 
+import pytest
 from django.urls import reverse
-from pytest_django.asserts import assertFormError
-
 from news.forms import BAD_WORDS, WARNING
 from news.models import Comment
+from pytest_django.asserts import assertFormError
 
 
 @pytest.mark.django_db

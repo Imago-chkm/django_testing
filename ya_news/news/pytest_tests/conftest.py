@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
-import pytest
 
+import pytest
 from django.contrib.auth import get_user_model
 from django.test.client import Client
 from django.utils import timezone
-
 from news.models import Comment, News
+
 from . import constants
 
 User = get_user_model()

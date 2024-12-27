@@ -1,11 +1,11 @@
 import pytest
+from http import HTTPStatus
 
 from django.urls import reverse
 from pytest_django.asserts import assertFormError
 
 from news.forms import BAD_WORDS, WARNING
 from news.models import Comment
-
 
 
 @pytest.mark.django_db
@@ -37,18 +37,49 @@ def test_user_cant_use_bad_words(author_client, id_for_args):
     assertFormError(response, 'form', 'text', errors=WARNING)
     assert Comment.objects.count() == 0
 
-    # def test_author_can_edit_his_comments(self):
-    #     """Автор может редактировать свои комментарии."""
-    #     pass
 
-    # def test_author_can_delete_his_comments(self):
-    #     """Автор может удалять свои комментарии."""
-    #     pass
+def test_author_can_edit_his_comments(
+    author_client,
+    comment_id_for_args,
+    form_data,
+    comment
+):
+    """Автор может редактировать свои комментарии."""
+    author_client.post(reverse(
+        'news:edit',
+        args=comment_id_for_args
+    ), form_data)
+    comment.refresh_from_db()
+    assert comment.text == form_data['text']
 
-    # def test_user_cant_edit_another_users_comments(self):
-    #     """Пользователь не может редактировать чужие комментарии."""
-    #     pass
 
-    # def test_user_cant_delele_another_users_comments(self):
-    #     """Пользователь не может удалять чужие комментарии."""
-    # pass
+def test_author_can_delete_his_comments(
+    author_client,
+    comment_id_for_args
+):
+    """Автор может удалять свои комментарии."""
+    author_client.post(reverse('news:delete', args=comment_id_for_args))
+    assert Comment.objects.count() == 0
+
+
+def test_user_cant_edit_another_users_comments(
+    not_author_client,
+    comment_id_for_args,
+    form_data,
+    comment
+):
+    """Пользователь не может редактировать чужие комментарии."""
+    assert not_author_client.post(reverse(
+        'news:edit',
+        args=comment_id_for_args
+    ), form_data).status_code == HTTPStatus.NOT_FOUND
+    assert comment.text == Comment.objects.get(id=comment.id).text
+
+
+def test_user_cant_delele_another_users_comments(
+    not_author_client,
+    comment_id_for_args
+):
+    """Пользователь не может удалять чужие комментарии."""
+    not_author_client.post(reverse('news:delete', args=comment_id_for_args))
+    assert Comment.objects.count() == 1

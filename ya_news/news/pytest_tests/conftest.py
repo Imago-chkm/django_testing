@@ -1,9 +1,11 @@
+from datetime import datetime, timedelta
 import pytest
 
 from django.contrib.auth import get_user_model
 from django.test.client import Client
 
 from news.models import Comment, News
+from . import constants
 
 User = get_user_model()
 
@@ -57,3 +59,17 @@ def not_author_client(not_author):
     client = Client()
     client.force_login(not_author)
     return client
+
+
+@pytest.fixture
+def news_for_paginate(news):
+    today = datetime.today()
+    all_news = [
+        News(
+            title=f'Новость {index}',
+            text='Просто текст.',
+            date=today - timedelta(days=index)
+        )
+        for index in range(constants.NEW_COUNT_FOR_PAGINATE + 1)
+    ]
+    return News.objects.bulk_create(all_news)

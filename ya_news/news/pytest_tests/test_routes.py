@@ -45,7 +45,10 @@ def test_edit_delete_comments_availability_for_author(
     args,
     expected_status
 ):
-    """Страницы редактирования и удаления комментария доступны автору."""
+    """
+    Страницы редактирования и удаления комментария доступны автору.
+    Для анонима срабатывает ошибка 404.
+    """
     url = reverse(name, args=args)
     response = parametrized_client.get(url)
     assert response.status_code == expected_status
@@ -65,7 +68,3 @@ def test_edit_delete_comments_redirect_for_anonim(client, name, args):
     expected_url = f'{login_url}?next={url}'
     response = client.get(url)
     assertRedirects(response, expected_url)
-
-# def test_edit_delete_comments_404_for_another_users():
-#     """Ошибка 404 для юзеров касаемо чужих комментариев."""
-#     pass

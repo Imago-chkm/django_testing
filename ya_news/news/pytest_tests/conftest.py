@@ -100,3 +100,10 @@ def auth_client(user):
     client = Client()
     client.force_login(user)
     return client
+
+
+@pytest.fixture
+def form_data():
+    return {
+        'text': 'Comment'
+    }

@@ -1,12 +1,29 @@
+import pytest
+
+from django.urls import reverse
+
+from news.models import Comment
 
 
-    # def test_anonim_cant_create_comment():
-    #     """Аноним не может отправить комментарий."""
-    #     pass
+@pytest.mark.django_db
+def test_anonim_cant_create_comment(form_data, client, id_for_args):
+    """Аноним не может отправить комментарий."""
+    client.post(reverse(
+        'news:detail',
+        args=id_for_args
+    ), data=form_data)
+    assert Comment.objects.count() == 0
 
-    # def test_auth_user_can_create_comment():
-    #     """Авторизованный пользователь может отправить комментарий."""
-    #     pass
+
+@pytest.mark.django_db
+def test_auth_user_can_create_comment(form_data, author_client, id_for_args):
+    """Авторизованный пользователь может отправить комментарий."""
+    author_client.post(reverse(
+        'news:detail',
+        args=id_for_args
+    ), data=form_data)
+    assert Comment.objects.count() == 1
+
 
     # def test_user_cant_use_bad_words():
     #     """Нельзя отправлять запрещенные слова."""

@@ -62,7 +62,7 @@ def not_author_client(not_author):
 
 
 @pytest.fixture
-def news_for_paginate(news):
+def all_news():
     today = datetime.today()
     all_news = [
         News(

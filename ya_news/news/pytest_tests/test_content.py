@@ -22,9 +22,15 @@ def test_news_order_by_pub_date(all_news, client):
     sorted_dates = sorted(all_dates, reverse=True)
     assert all_dates == sorted_dates
 
-# def test_comments_order_by_pub_date():
-#     """Сортировка комментариев от новых к старым."""
-#     pass
+
+@pytest.mark.django_db
+def test_comments_order_by_pub_date(client, create_comments, id_for_args):
+    """Сортировка комментариев от новых к старым."""
+    response = client.get(reverse('news:detail', args=id_for_args))
+    news = response.context['news']
+    all_comments = news.comment_set.all()
+    assert 'news' in response.context
+    assert all_comments[0].created < all_comments[1].created
 
 # def test_comment_form_availability_for_auth_users():
 #     """Форма комментариев доступна только авторизованным."""

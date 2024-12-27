@@ -3,6 +3,7 @@ import pytest
 
 from django.contrib.auth import get_user_model
 from django.test.client import Client
+from django.utils import timezone
 
 from news.models import Comment, News
 from . import constants
@@ -73,3 +74,17 @@ def all_news():
         for index in range(constants.NEW_COUNT_FOR_PAGINATE + 1)
     ]
     return News.objects.bulk_create(all_news)
+
+
+@pytest.fixture
+def create_comments(author, news):
+    now = timezone.now()
+    for index in range(2):
+        comments = Comment.objects.create(
+            news=news,
+            text=index,
+            author=author,
+        )
+        comments.created = now + timedelta(days=index)
+        comments.save()
+    return comments

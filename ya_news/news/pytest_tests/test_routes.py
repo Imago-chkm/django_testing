@@ -1,8 +1,8 @@
 from http import HTTPStatus
-
 import pytest
-from pytest_lazyfixture import lazy_fixture
 
+from pytest_lazyfixture import lazy_fixture
+from pytest_django.asserts import assertRedirects
 from django.urls import reverse
 
 
@@ -50,9 +50,21 @@ def test_edit_delete_comments_availability_for_author(
     response = parametrized_client.get(url)
     assert response.status_code == expected_status
 
-# def test_edit_delete_comments_redirect_for_anonim():
-#     """Редирект с редактирования и удаления комментария для анонима."""
-#     pass
+
+@pytest.mark.parametrize(
+    'name, args',
+    (
+        ('news:edit', lazy_fixture('comment_id_for_args')),
+        ('news:delete', lazy_fixture('comment_id_for_args')),
+    ),
+)
+def test_edit_delete_comments_redirect_for_anonim(client, name, args):
+    """Редирект с редактирования и удаления комментария для анонима."""
+    login_url = reverse('users:login')
+    url = reverse(name, args=args)
+    expected_url = f'{login_url}?next={url}'
+    response = client.get(url)
+    assertRedirects(response, expected_url)
 
 # def test_edit_delete_comments_404_for_another_users():
 #     """Ошибка 404 для юзеров касаемо чужих комментариев."""

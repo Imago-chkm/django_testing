@@ -1,6 +1,7 @@
 import pytest
 
 from django.urls import reverse
+from pytest_lazyfixture import lazy_fixture
 
 from . import constants
 
@@ -32,6 +33,23 @@ def test_comments_order_by_pub_date(client, create_comments, id_for_args):
     assert 'news' in response.context
     assert all_comments[0].created < all_comments[1].created
 
-# def test_comment_form_availability_for_auth_users():
-#     """Форма комментариев доступна только авторизованным."""
-#     pass
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    'parametrize_client, expecting_answer',
+    (
+        (lazy_fixture('auth_client'), True),
+        (lazy_fixture('client'), False),
+    )
+)
+def test_comment_form_availability_for_auth_users(
+    id_for_args,
+    parametrize_client,
+    expecting_answer
+):
+    """Форма комментариев доступна только авторизованным."""
+    response = parametrize_client.get(reverse('news:detail', args=id_for_args))
+    if expecting_answer is True:
+        assert 'form' in response.context
+    else:
+        assert 'form' not in response.context

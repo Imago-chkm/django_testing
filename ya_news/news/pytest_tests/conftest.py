@@ -88,3 +88,15 @@ def create_comments(author, news):
         comments.created = now + timedelta(days=index)
         comments.save()
     return comments
+
+
+@pytest.fixture
+def user(django_user_model):
+    return django_user_model.objects.create(username='Пользователь')
+
+
+@pytest.fixture
+def auth_client(user):
+    client = Client()
+    client.force_login(user)
+    return client

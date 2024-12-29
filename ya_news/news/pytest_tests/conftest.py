@@ -101,7 +101,7 @@ def home_url(client):
 
 
 @pytest.fixture
-def detail_url(news):
+def detail_url(id_for_args):
     return reverse('news:detail', args=id_for_args)
 
 

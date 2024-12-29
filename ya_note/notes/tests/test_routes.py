@@ -9,13 +9,7 @@ class TestRouters(fixtures.Fixtures):
 
     def test_availability_pages(self):
         """Страницы, доступные анонимному пользователю."""
-        urls = (
-            ('notes:home', None),
-            ('users:login', None),
-            ('users:logout', None),
-            ('users:signup', None),
-        )
-        for name, args in urls:
+        for name, args in self.PUBLIC_URLS:
             with self.subTest(name=name):
                 url = reverse(name, args=args)
                 response = self.client.get(url)
@@ -26,11 +20,7 @@ class TestRouters(fixtures.Fixtures):
         user = self.author
         status = HTTPStatus.OK
         self.client.force_login(user)
-        for name in (
-            self.URL_NOTES_LIST,
-            self.URL_NOTES_ADD,
-            self.URL_NOTES_SUCCESS
-        ):
+        for name in self.FOR_AUTH_URLS:
             with self.subTest(user=user, name=name):
                 url = reverse(name)
                 response = self.client.get(url)
@@ -44,11 +34,7 @@ class TestRouters(fixtures.Fixtures):
         )
         for user, status in users_statuses:
             self.client.force_login(user)
-            for name in (
-                self.URL_NOTES_EDIT,
-                self.URL_NOTES_DELETE,
-                self.URL_NOTES_DETAIL
-            ):
+            for name in self.PRIVATE_AUTH_URLS:
                 with self.subTest(user=user, name=name):
                     url = reverse(name, args=(self.note.slug,))
                     response = self.client.get(url)
@@ -57,15 +43,7 @@ class TestRouters(fixtures.Fixtures):
     def test_redirect_for_anonymous_client(self):
         """Редирект касаемый заметок, для анонимного пользователя."""
         login_url = reverse('users:login')
-        urls = (
-            (self.URL_NOTES_LIST, None),
-            (self.URL_NOTES_SUCCESS, None),
-            (self.URL_NOTES_ADD, None),
-            (self.URL_NOTES_EDIT, (self.note.slug,)),
-            (self.URL_NOTES_DELETE, (self.note.slug,)),
-            (self.URL_NOTES_DETAIL, (self.note.slug,)),
-        )
-        for name, args in urls:
+        for name, args in self.get_redirect_urls_data():
             with self.subTest(name=name):
                 url = reverse(name, args=args)
                 redirect_url = f'{login_url}?next={url}'

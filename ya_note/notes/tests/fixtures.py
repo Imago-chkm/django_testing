@@ -19,6 +19,22 @@ class Fixtures(TestCase):
     URL_NOTES_EDIT = 'notes:edit'
     URL_NOTES_DELETE = 'notes:delete'
     URL_NOTES_DETAIL = 'notes:detail'
+    PUBLIC_URLS = (
+        ('notes:home', None),
+        ('users:login', None),
+        ('users:logout', None),
+        ('users:signup', None),
+    )
+    FOR_AUTH_URLS = (
+        URL_NOTES_LIST,
+        URL_NOTES_ADD,
+        URL_NOTES_SUCCESS
+    )
+    PRIVATE_AUTH_URLS = (
+        URL_NOTES_EDIT,
+        URL_NOTES_DELETE,
+        URL_NOTES_DETAIL
+    )
 
     @classmethod
     def setUpTestData(cls):
@@ -44,3 +60,13 @@ class Fixtures(TestCase):
             'title': cls.SLUG_CHECK,
             'text': cls.NEW_NOTE_TEXT,
         }
+
+    def get_redirect_urls_data(self):
+        return (
+            (self.URL_NOTES_LIST, None),
+            (self.URL_NOTES_SUCCESS, None),
+            (self.URL_NOTES_ADD, None),
+            (self.URL_NOTES_EDIT, (self.note.slug,)),
+            (self.URL_NOTES_DELETE, (self.note.slug,)),
+            (self.URL_NOTES_DETAIL, (self.note.slug,)),
+        )

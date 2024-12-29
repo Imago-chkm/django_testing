@@ -1,10 +1,9 @@
 from http import HTTPStatus
 
 import pytest
-from pytest_django.asserts import assertFormError
-
 from news.forms import BAD_WORDS, WARNING
 from news.models import Comment
+from pytest_django.asserts import assertFormError
 
 from . import constants
 

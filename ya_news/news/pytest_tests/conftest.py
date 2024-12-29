@@ -3,7 +3,8 @@ from datetime import datetime, timedelta
 import pytest
 from django.contrib.auth import get_user_model
 from django.test.client import Client
-from django.utils import timezone
+from django.urls import reverse
+
 from news.models import Comment, News
 
 from . import constants
@@ -22,6 +23,9 @@ def news():
 @pytest.fixture
 def id_for_args(news):
     return news.id,
+# пока что все ломается при попытке перенести в константы
+# моих знаний не хватило, чтобы перенести это в константу,
+# либо получается много кода вместо трех строк
 
 
 @pytest.fixture
@@ -65,29 +69,13 @@ def not_author_client(not_author):
 @pytest.fixture
 def all_news():
     today = datetime.today()
-    all_news = [
-        News(
+    return News.objects.bulk_create(
+        (News(
             title=f'Новость {index}',
             text='Просто текст.',
             date=today - timedelta(days=index)
-        )
-        for index in range(constants.NEW_COUNT_FOR_PAGINATE + 1)
-    ]
-    return News.objects.bulk_create(all_news)
-
-
-@pytest.fixture
-def create_comments(author, news):
-    now = timezone.now()
-    for index in range(2):
-        comments = Comment.objects.create(
-            news=news,
-            text=index,
-            author=author,
-        )
-        comments.created = now + timedelta(days=index)
-        comments.save()
-    return comments
+        ) for index in range(constants.NEW_COUNT_FOR_PAGINATE + 1))
+    )
 
 
 @pytest.fixture
@@ -103,7 +91,28 @@ def auth_client(user):
 
 
 @pytest.fixture
-def form_data():
-    return {
-        'text': 'Comment'
-    }
+def home_url(client):
+    return client.get(reverse('news:home'))
+
+
+@pytest.fixture
+def detail_url(news):
+    return reverse('news:detail', args=[news.id,])
+
+
+@pytest.fixture
+def edit_url(comment_id_for_args):
+    return reverse(
+        'news:edit',
+        args=comment_id_for_args
+    )
+
+
+@pytest.fixture
+def delete_url(comment_id_for_args):
+    return reverse('news:delete', args=comment_id_for_args)
+
+
+@pytest.fixture
+def empty_comment_in_db():
+    return Comment.objects.all().delete()

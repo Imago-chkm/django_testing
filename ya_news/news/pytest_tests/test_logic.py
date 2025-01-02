@@ -1,37 +1,38 @@
 from http import HTTPStatus
 
 import pytest
-from news.forms import BAD_WORDS, WARNING
-from news.models import Comment
 from pytest_django.asserts import assertFormError
 
-from . import constants
+from news.forms import BAD_WORDS, WARNING
+from news.models import Comment
+from . import conftest
 
 
 @pytest.mark.django_db
-def test_anonim_cant_create_comment(client, detail_url, empty_comment_in_db):
+def test_anonim_cant_create_comment(client, detail_url):
     """Аноним не может отправить комментарий."""
-    client.post(detail_url, data=constants.FORM_DATA)
+    Comment.objects.all().delete()
+    client.post(detail_url, data=conftest.FORM_DATA)
     assert Comment.objects.first() is None
 
 
 @pytest.mark.django_db
 def test_auth_user_can_create_comment(
     author_client,
-    detail_url,
-    empty_comment_in_db
+    detail_url
 ):
     """Авторизованный пользователь может отправить комментарий."""
-    author_client.post(detail_url, data=constants.FORM_DATA)
+    Comment.objects.all().delete()
+    author_client.post(detail_url, data=conftest.FORM_DATA)
     assert Comment.objects.first()
 
 
 def test_user_cant_use_bad_words(
     author_client,
-    detail_url,
-    empty_comment_in_db
+    detail_url
 ):
     """Нельзя отправлять запрещенные слова."""
+    Comment.objects.all().delete()
     response = author_client.post(
         detail_url,
         data={'text': BAD_WORDS[0]}
@@ -46,9 +47,9 @@ def test_author_can_edit_his_comments(
     comment
 ):
     """Автор может редактировать свои комментарии."""
-    author_client.post(edit_url, constants.FORM_DATA)
+    author_client.post(edit_url, conftest.FORM_DATA)
     edited_comment = Comment.objects.get(id=comment.id)
-    assert edited_comment.text == constants.FORM_DATA['text']
+    assert edited_comment.text == conftest.FORM_DATA['text']
 
 
 def test_author_can_delete_his_comments(
@@ -71,7 +72,7 @@ def test_user_cant_edit_another_users_comments(
     initial_comments = list(Comment.objects.all())
     assert not_author_client.post(
         edit_url,
-        constants.FORM_DATA
+        conftest.FORM_DATA
     ).status_code == HTTPStatus.NOT_FOUND
     final_comments = list(Comment.objects.all())
     assert len(set(initial_comments) - set(final_comments)) == 0

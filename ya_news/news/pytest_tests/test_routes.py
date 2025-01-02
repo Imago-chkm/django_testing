@@ -8,18 +8,18 @@ from pytest_lazyfixture import lazy_fixture
 
 @pytest.mark.django_db
 @pytest.mark.parametrize(
-    'name, args',
+    'url',
     (
-        ('news:home', None),
-        ('news:detail', lazy_fixture('id_for_args')),
-        ('users:login', None),
-        ('users:logout', None),
-        ('users:signup', None),
+        lazy_fixture('home_url'),
+        lazy_fixture('detail_url'),
+        lazy_fixture('login_url'),
+        lazy_fixture('logout_url'),
+        lazy_fixture('signup_url'),
     )
 )
-def test_pages_availability_for_anonymous_user(client, name, args):
+def test_pages_availability_for_anonymous_user(client, url):
     """Страницы, доступные анонимным пользователям."""
-    url = reverse(name, args=args)
+    # url = reverse(url)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 

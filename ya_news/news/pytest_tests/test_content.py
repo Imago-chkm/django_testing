@@ -1,21 +1,22 @@
 import pytest
 from pytest_lazyfixture import lazy_fixture
 
-from . import constants
+from news.forms import CommentForm
+from yanews import settings
 
 pytestmark = pytest.mark.django_db
 
 
-def test_homepage_paginate(all_news, home_url):
+def test_homepage_paginate(all_news, home_url, client):
     """Количество новостей на главной странице — не более установленного."""
-    response = home_url
+    response = client.get(home_url)
     object_list = response.context['object_list']
-    assert object_list.count() == constants.NEW_COUNT_FOR_PAGINATE
+    assert object_list.count() == settings.NEWS_COUNT_ON_HOME_PAGE
 
 
-def test_news_order_by_pub_date(all_news, home_url):
+def test_news_order_by_pub_date(all_news, home_url, client):
     """Сортировка новостей от новых к старым."""
-    response = home_url
+    response = client.get(home_url)
     object_list = response.context['object_list']
     all_dates = [news.date for news in object_list]
     sorted_dates = sorted(all_dates, reverse=True)
@@ -33,33 +34,20 @@ def test_comments_order_by_pub_date(detail_url, client):
     assert all_comments == sorted_comments
 
 
-@pytest.mark.parametrize(
-    'parametrize_client, expecting_answer',
-    (
-        (lazy_fixture('auth_client'), True),
-    )
-)
 def test_comment_form_availability_for_auth_users(
     detail_url,
-    parametrize_client,
-    expecting_answer
+    auth_client
 ):
     """Форма комментариев доступна только авторизованным."""
-    response = parametrize_client.get(detail_url)
+    response = auth_client.get(detail_url)
     assert 'form' in response.context
+    assert isinstance(response.context['form'], CommentForm)
 
 
-@pytest.mark.parametrize(
-    'parametrize_client, expecting_answer',
-    (
-        (lazy_fixture('client'), False),
-    )
-)
 def test_comment_form_not_availability_for_anonim(
     detail_url,
-    parametrize_client,
-    expecting_answer
+    client
 ):
     """Форма комментариев недоступна анонимам."""
-    response = parametrize_client.get(detail_url)
+    response = client.get(detail_url)
     assert 'form' not in response.context

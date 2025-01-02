@@ -4,15 +4,16 @@ import pytest
 from django.contrib.auth import get_user_model
 from django.test.client import Client
 from django.urls import reverse
-from news.models import Comment, News
 
-from . import constants
+from news.models import Comment, News
+from yanews import settings
 
 # .\ya_news\news\pytest_tests\conftest.py:8:1:
 # I001 isort found an import in the wrong position
 # меня тесты площадки не пускают сдать работу, не могу внести правки
 # в остальных импортах та же история, flake8 ругается и не дает сдать
 
+FORM_DATA = {'text': 'Comment'}
 
 User = get_user_model()
 
@@ -79,7 +80,7 @@ def all_news():
             title=f'Новость {index}',
             text='Просто текст.',
             date=today - timedelta(days=index)
-        ) for index in range(constants.NEW_COUNT_FOR_PAGINATE + 1))
+        ) for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1))
     )
 
 
@@ -96,8 +97,8 @@ def auth_client(user):
 
 
 @pytest.fixture
-def home_url(client):
-    return client.get(reverse('news:home'))
+def home_url():
+    return reverse('news:home')
 
 
 @pytest.fixture
@@ -119,5 +120,15 @@ def delete_url(comment_id_for_args):
 
 
 @pytest.fixture
-def empty_comment_in_db():
-    return Comment.objects.all().delete()
+def login_url():
+    return reverse('users:login')
+
+
+@pytest.fixture
+def logout_url():
+    return reverse('users:logout')
+
+
+@pytest.fixture
+def signup_url():
+    return reverse('users:signup')

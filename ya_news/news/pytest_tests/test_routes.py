@@ -19,7 +19,6 @@ from pytest_lazyfixture import lazy_fixture
 )
 def test_pages_availability_for_anonymous_user(client, url):
     """Страницы, доступные анонимным пользователям."""
-    # url = reverse(url)
     response = client.get(url)
     assert response.status_code == HTTPStatus.OK
 
@@ -33,38 +32,34 @@ def test_pages_availability_for_anonymous_user(client, url):
     )
 )
 @pytest.mark.parametrize(
-    'name, args',
+    'url',
     (
-        ('news:edit', lazy_fixture('comment_id_for_args')),
-        ('news:delete', lazy_fixture('comment_id_for_args')),
+        lazy_fixture('edit_url'),
+        lazy_fixture('delete_url'),
     ),
 )
 def test_edit_delete_comments_availability_for_author(
     parametrized_client,
-    name,
-    args,
+    url,
     expected_status
 ):
     """
     Страницы редактирования и удаления комментария доступны автору.
     Для анонима срабатывает ошибка 404.
     """
-    url = reverse(name, args=args)
     response = parametrized_client.get(url)
     assert response.status_code == expected_status
 
 
 @pytest.mark.parametrize(
-    'name, args',
+    'url',
     (
-        ('news:edit', lazy_fixture('comment_id_for_args')),
-        ('news:delete', lazy_fixture('comment_id_for_args')),
+        lazy_fixture('edit_url'),
+        lazy_fixture('delete_url'),
     ),
 )
-def test_edit_delete_comments_redirect_for_anonim(client, name, args):
+def test_edit_delete_comments_redirect_for_anonim(client, login_url, url):
     """Редирект с редактирования и удаления комментария для анонима."""
-    login_url = reverse('users:login')
-    url = reverse(name, args=args)
     expected_url = f'{login_url}?next={url}'
     response = client.get(url)
     assertRedirects(response, expected_url)

@@ -1,5 +1,4 @@
 import pytest
-from pytest_lazyfixture import lazy_fixture
 
 from news.forms import CommentForm
 from yanews import settings

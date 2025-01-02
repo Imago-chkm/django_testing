@@ -12,6 +12,7 @@ from yanews import settings
 # I001 isort found an import in the wrong position
 # меня тесты площадки не пускают сдать работу, не могу внести правки
 # в остальных импортах та же история, flake8 ругается и не дает сдать
+# p.s. если не используется isort в коммите то все норм
 
 FORM_DATA = {'text': 'Comment'}
 

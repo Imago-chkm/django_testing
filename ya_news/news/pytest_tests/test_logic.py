@@ -42,7 +42,6 @@ def test_user_cant_use_bad_words(
         detail_url,
         data={'text': BAD_WORDS[0]}
     )
-    
     assertFormError(response, 'form', 'text', errors=WARNING)
     comments_count = Comment.objects.count()
     assert expected_count == comments_count

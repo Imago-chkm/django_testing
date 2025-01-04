@@ -1,18 +1,12 @@
 from datetime import datetime, timedelta
 
 import pytest
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.test.client import Client
 from django.urls import reverse
 
 from news.models import Comment, News
-from yanews import settings
-
-# .\ya_news\news\pytest_tests\conftest.py:8:1:
-# I001 isort found an import in the wrong position
-# меня тесты площадки не пускают сдать работу, не могу внести правки
-# в остальных импортах та же история, flake8 ругается и не дает сдать
-# p.s. если не используется isort в коммите то все норм
 
 FORM_DATA = {'text': 'Comment'}
 
@@ -28,14 +22,6 @@ def news():
 
 
 @pytest.fixture
-def id_for_args(news):
-    return news.id,
-# пока что все ломается при попытке перенести в константы
-# моих знаний не хватило, чтобы перенести это в константу,
-# либо получается много кода вместо трех строк
-
-
-@pytest.fixture
 def author(django_user_model):
     return django_user_model.objects.create(username='Автор')
 
@@ -47,11 +33,6 @@ def comment(author, news):
         text='Tекст',
         author=author,
     )
-
-
-@pytest.fixture
-def comment_id_for_args(comment):
-    return comment.id,
 
 
 @pytest.fixture
@@ -103,21 +84,21 @@ def home_url():
 
 
 @pytest.fixture
-def detail_url(id_for_args):
-    return reverse('news:detail', args=id_for_args)
+def detail_url(news):
+    return reverse('news:detail', args=[news.id, ])
 
 
 @pytest.fixture
-def edit_url(comment_id_for_args):
+def edit_url(comment):
     return reverse(
         'news:edit',
-        args=comment_id_for_args
+        args=[comment.id, ]
     )
 
 
 @pytest.fixture
-def delete_url(comment_id_for_args):
-    return reverse('news:delete', args=comment_id_for_args)
+def delete_url(comment):
+    return reverse('news:delete', args=[comment.id, ])
 
 
 @pytest.fixture

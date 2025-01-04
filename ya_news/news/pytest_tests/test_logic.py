@@ -21,7 +21,9 @@ def test_anonim_cant_create_comment(client, detail_url):
 @pytest.mark.django_db
 def test_auth_user_can_create_comment(
     author_client,
-    detail_url
+    detail_url,
+    news,
+    author
 ):
     """Авторизованный пользователь может отправить комментарий."""
     Comment.objects.all().delete()
@@ -29,6 +31,10 @@ def test_auth_user_can_create_comment(
     author_client.post(detail_url, data=conftest.FORM_DATA)
     comments_count = Comment.objects.count() - 1
     assert expected_count == comments_count
+    created_comment = Comment.objects.get()
+    assert created_comment.text == conftest.FORM_DATA['text']
+    assert created_comment.news == news
+    assert created_comment.author == author
 
 
 def test_user_cant_use_bad_words(
@@ -65,14 +71,15 @@ def test_author_can_edit_his_comments(
 
 def test_author_can_delete_his_comments(
     author_client,
-    delete_url
+    delete_url,
+    comment
 ):
     """Автор может удалять свои комментарии."""
     expected_count = Comment.objects.count() - 1
     author_client.post(delete_url)
     comments_count = Comment.objects.count()
     assert expected_count == comments_count
-    assert not Comment.objects.exists()
+    assert not Comment.objects.filter(id=comment.id).exists()
 
 
 def test_user_cant_edit_another_users_comments(
@@ -88,7 +95,6 @@ def test_user_cant_edit_another_users_comments(
     ).status_code == HTTPStatus.NOT_FOUND
     final_comments = set(Comment.objects.all())
     assert initial_comments == final_comments
-    assert comment.text == Comment.objects.get(id=comment.id).text
 
 
 def test_user_cant_delele_another_users_comments(
@@ -99,4 +105,7 @@ def test_user_cant_delele_another_users_comments(
     """Пользователь не может удалять чужие комментарии."""
     not_author_client.post(delete_url)
     assert Comment.objects.count() == 1
-    assert comment.text == Comment.objects.get(id=comment.id).text
+    non_deleted_comment = Comment.objects.get(id=comment.id)
+    assert comment.text == non_deleted_comment.text
+    assert comment.news == non_deleted_comment.news
+    assert comment.author == non_deleted_comment.author

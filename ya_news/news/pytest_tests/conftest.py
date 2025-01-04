@@ -56,13 +56,12 @@ def not_author_client(not_author):
 
 @pytest.fixture
 def all_news():
-    today = datetime.today()
     return News.objects.bulk_create(
-        (News(
+        News(
             title=f'Новость {index}',
             text='Просто текст.',
-            date=today - timedelta(days=index)
-        ) for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1))
+            date=datetime.today() - timedelta(days=index)
+        ) for index in range(settings.NEWS_COUNT_ON_HOME_PAGE + 1)
     )
 
 

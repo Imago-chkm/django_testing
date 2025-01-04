@@ -1,6 +1,7 @@
 from django.urls import reverse
 
 from . import fixtures
+from notes.forms import NoteForm
 
 
 class TestContent(fixtures.Fixtures):
@@ -25,3 +26,4 @@ class TestContent(fixtures.Fixtures):
             url = reverse(name, args=args)
             response = self.author_client.get(url)
             self.assertIn('form', response.context)
+            self.assertIsInstance(response.context['form'], NoteForm)

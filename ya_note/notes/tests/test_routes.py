@@ -6,7 +6,6 @@ from . import fixtures
 
 
 class TestRouters(fixtures.Fixtures):
-
     def test_availability_pages(self):
         """Страницы, доступные анонимному пользователю."""
         for name, args in self.PUBLIC_URLS:
@@ -34,6 +33,8 @@ class TestRouters(fixtures.Fixtures):
         )
         for user, status in users_statuses:
             self.client.force_login(user)
+            # не получилось, попробовал как смог, в гугле ответ тоже не нашел
+            # уперся в то, что не могу получить экземпляр нужного юзера
             for name in self.PRIVATE_AUTH_URLS:
                 with self.subTest(user=user, name=name):
                     url = reverse(name, args=(self.note.slug,))
@@ -42,10 +43,9 @@ class TestRouters(fixtures.Fixtures):
 
     def test_redirect_for_anonymous_client(self):
         """Редирект касаемый заметок, для анонимного пользователя."""
-        login_url = reverse('users:login')
         for name, args in self.get_redirect_urls_data():
             with self.subTest(name=name):
                 url = reverse(name, args=args)
-                redirect_url = f'{login_url}?next={url}'
+                redirect_url = f'{self.URL_LOGIN}?next={url}'
                 response = self.client.get(url)
                 self.assertRedirects(response, redirect_url)

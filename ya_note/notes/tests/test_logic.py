@@ -24,6 +24,10 @@ class TestLogic(fixtures.Fixtures):
         self.author_client.post(self.url_add, data=self.form_data)
         note_count = Note.objects.count() - 1
         self.assertEqual(note_count, expected_count)
+        created_note = Note.objects.get()
+        self.assertEqual(created_note.title, self.form_data['title'])
+        self.assertEqual(created_note.text, self.form_data['text'])
+        self.assertEqual(created_note.author, self.author)
 
     def test_no_possible_two_same_slug(self):
         """Невозможно создать две заметки с одинаковым slug."""
@@ -58,6 +62,10 @@ class TestLogic(fixtures.Fixtures):
             Note.objects.get(id=self.note.id).text,
             self.NEW_NOTE_TEXT
         )
+        edited_note = Note.objects.get()
+        self.assertEqual(edited_note.title, self.form_data['title'])
+        self.assertEqual(edited_note.text, self.form_data['text'])
+        self.assertEqual(edited_note.author, self.author)
 
     def test_author_can_delete_his_notes(self):
         """Автор может удалять свои заметки."""
@@ -78,6 +86,10 @@ class TestLogic(fixtures.Fixtures):
             Note.objects.get(id=self.note.id).text,
             self.NOTE_TEXT
         )
+        non_edited_note = Note.objects.get()
+        self.assertEqual(non_edited_note.title, self.note.title)
+        self.assertEqual(non_edited_note.text, self.note.text)
+        self.assertEqual(non_edited_note.author, self.author)
 
     def test_user_cant_delele_another_users_notes(self):
         """Пользователь не может удалять чужие заметки."""
@@ -86,3 +98,7 @@ class TestLogic(fixtures.Fixtures):
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
         note_count = Note.objects.count()
         self.assertEqual(note_count, expected_count)
+        non_deleted_note = Note.objects.get()
+        self.assertEqual(non_deleted_note.title, self.note.title)
+        self.assertEqual(non_deleted_note.text, self.note.text)
+        self.assertEqual(non_deleted_note.author, self.author)

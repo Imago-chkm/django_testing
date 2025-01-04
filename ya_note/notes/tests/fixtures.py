@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
+
 from notes.models import Note
 
 User = get_user_model()
@@ -19,6 +20,7 @@ class Fixtures(TestCase):
     URL_NOTES_EDIT = 'notes:edit'
     URL_NOTES_DELETE = 'notes:delete'
     URL_NOTES_DETAIL = 'notes:detail'
+    URL_LOGIN = reverse('users:login')
     PUBLIC_URLS = (
         ('notes:home', None),
         ('users:login', None),
